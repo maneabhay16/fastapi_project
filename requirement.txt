@@ -6,3 +6,4 @@ bcrypt
 python-jose
 python-dotenv
 passlib[bcrypt]
+celery

@@ -4,7 +4,11 @@ from app.schemas.user import UserCreate, UserLogin
 from app.core.security import verify_password, create_access_token
 from app.crud.user import get_user_by_username, create_user
 from app.db import engine
+from app.tasks.email import send_welcome_email
 
+from app.models.user import User
+from typing import List
+from sqlmodel import select
 router = APIRouter()
 
 def get_db():
@@ -16,7 +20,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user = get_user_by_username(db, user.username)
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
-    return create_user(db, user.username, user.password)
+    new_user = create_user(db, user)
+    send_welcome_email(user.email, user.first_name)
+    return new_user
 
 @router.post("/login")
 def login(user: UserLogin, db: Session = Depends(get_db)):
