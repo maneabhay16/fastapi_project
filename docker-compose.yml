@@ -6,14 +6,16 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: fastapi_app
-    volumes:
-      - .:/code
-    ports:
-      - "8000:8000"
     depends_on:
       - db
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/fastapi_db
+      - rabbitmq
+    env_file:
+      - ./env/.env.${ENV:-local}
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/code
+    command: ["./wait-for-it.sh", "db:5432", "--", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
 
   db:
     image: postgres:15
@@ -28,18 +30,32 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  alembic:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # for celery
+      - "15672:15672" # for RabbitMQ management UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  celery_worker:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: alembic_runner
+    container_name: celery_worker
     depends_on:
-      - db
-    command: alembic upgrade head
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/fastapi_db
+      - api
+      - rabbitmq
+    env_file:
+      - ./env/.env.${ENV:-local}
+    command: ["./wait-for-it.sh", "db:5432", "--", "celery", "-A", "app.tasks.celery_worker", "worker", "--loglevel=info"]
     volumes:
       - .:/code
 
 volumes:
   postgres_data:
+  rabbitmq_data:
