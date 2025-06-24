@@ -1,12 +1,16 @@
-from sqlmodel import SQLModel, Field
-from typing import Optional
+from sqlmodel import SQLModel, Field, Relationship
+from typing import Optional, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.models.profile import Profile  # only for type hints
 
 class User(SQLModel, table=True):
-    # add first name and last name fields then create a fk realtionship and put migration aremove migration and check restore
-    # celebry for email steup 
     id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(unique=True, index=True)
-    email:str =Field(unique=True, index=True)
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    username: str = Field(index=True, unique=True)
+    email: str = Field(index=True, unique=True)
+    first_name: Optional[str]
+    last_name: Optional[str]
     hashed_password: str
+
+    # forward reference to Profile
+    profile: Optional["Profile"] = Relationship(back_populates="user")
