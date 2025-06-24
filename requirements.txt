@@ -7,3 +7,5 @@ python-jose
 python-dotenv
 passlib[bcrypt]
 celery
+pydantic[email]
+psycopg2-binary

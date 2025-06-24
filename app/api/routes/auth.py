@@ -21,7 +21,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     new_user = create_user(db, user)
-    send_welcome_email(user.email, user.first_name)
+    send_welcome_email.delay(user.email, user.first_name)
     return new_user
 
 @router.post("/login")
