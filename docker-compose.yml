@@ -14,9 +14,10 @@ services:
       - ./env/.env.${ENV:-local}
     ports:
       - "8000:8000"
-    volumes:
-      - .:/code
-    command: ["./wait-for-it.sh", "db:5432", "--", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db:5432/fastapi_db
 
   db:
     image: postgres:15
@@ -53,7 +54,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: celery_worker
+    container_name: alembic_runner
     depends_on:
       - api
       - rabbitmq
@@ -66,4 +67,3 @@ services:
 
 volumes:
   postgres_data:
-  rabbitmq_data:
