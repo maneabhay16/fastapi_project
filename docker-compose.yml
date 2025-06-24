@@ -6,8 +6,12 @@ services:
       context: .
       dockerfile: Dockerfile
     container_name: fastapi_app
-    volumes:
-      - .:/code
+    depends_on:
+      - db
+      - rabbitmq
+      - redis
+    env_file:
+      - ./env/.env.${ENV:-local}
     ports:
       - "8000:8000"
     depends_on:
@@ -28,16 +32,36 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  alembic:
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"   # for Celery broker
+      - "15672:15672" # RabbitMQ UI
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+
+  redis:
+    image: redis:7
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  celery_worker:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: alembic_runner
     depends_on:
-      - db
-    command: alembic upgrade head
-    environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/fastapi_db
+      - api
+      - rabbitmq
+      - redis
+    env_file:
+      - ./env/.env.${ENV:-local}
+    command: ["./wait-for-it.sh", "db:5432", "--", "celery", "-A", "app.tasks.celery_worker", "worker", "--loglevel=info"]
     volumes:
       - .:/code
 
