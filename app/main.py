@@ -3,7 +3,7 @@ from app.api.routes.auth import router as auth_router
 from app.api.routes import profile
 from app.db import init_db
 from contextlib import asynccontextmanager
-from app.schemas import Band, Bands, Genre
+from app.schemas.bands import Band ,Genre
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
