@@ -1,16 +1,14 @@
-from sqlmodel import SQLModel, Field, Relationship
-from typing import Optional, TYPE_CHECKING
-
-if TYPE_CHECKING:
-    from app.models.profile import Profile  # only for type hints
+# app/models/user.py
+from sqlmodel import SQLModel, Field,Relationship
+from app.models.profile import Profile
+from typing import Optional
+import uuid
 
 class User(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    username: str = Field(index=True, unique=True)
-    email: str = Field(index=True, unique=True)
-    first_name: Optional[str]
-    last_name: Optional[str]
-    hashed_password: str
-
-    # forward reference to Profile
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    username: str
+    password: str
+    # first_name: Optional[str] = None
+    # last_name: Optional[str] = None
+    email: Optional[str] = None
     profile: Optional["Profile"] = Relationship(back_populates="user")

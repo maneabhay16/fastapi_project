@@ -1,6 +1,8 @@
 from sqlmodel import SQLModel
 from app.db import engine
 
+from app.models.user import User
+from app.models.profile import Profile
 from alembic import context
 from logging.config import fileConfig
 
