@@ -10,9 +10,9 @@ def create_user(db: Session, user_data: UserCreate):
     user = User(
         username=user_data.username,
         email=user_data.email,
-        first_name=user_data.first_name,
-        last_name=user_data.last_name,
-        hashed_password=hash_password(user_data.password),
+        # first_name=user_data.first_name,
+        # last_name=user_data.last_name,
+        password=hash_password(user_data.password),
     )
     db.add(user)
     db.commit()
