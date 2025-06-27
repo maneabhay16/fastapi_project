@@ -70,6 +70,22 @@ services:
     ports:
       - "8025:8025"    # Web UI
       - "1025:1025"    # SMTP
+      
+  flower:
+    image: mher/flower:2.0
+    container_name: flower
+    depends_on:
+      - rabbitmq
+      - celery_worker
+    environment:
+      - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+    ports:
+      - "5555:5555"
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh
+    command: ["sh", "/wait-for-it.sh", "rabbitmq:5672", "--", "celery", "flower", "--port=5555", "--address=0.0.0.0"]
+
 
 volumes:
   postgres_data:
