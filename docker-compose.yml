@@ -60,9 +60,16 @@ services:
       - redis
     env_file:
       - ./env/.env.${ENV:-local}
-    command: ["./wait-for-it.sh", "db:5432", "--", "celery", "-A", "app.tasks.celery_worker", "worker", "--loglevel=info"]
+    command: ["./wait-for-it.sh", "db:5432", "--", "celery", "-A", "app.tasks.celery_worker", "worker", "-Q", "emails", "--loglevel=info"]
     volumes:
       - .:/code
+  
+  mailpit:
+    image: axllent/mailpit
+    container_name: mailpit
+    ports:
+      - "8025:8025"    # Web UI
+      - "1025:1025"    # SMTP
 
 volumes:
   postgres_data:

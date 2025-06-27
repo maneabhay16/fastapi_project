@@ -4,7 +4,9 @@ from app.schemas.user import UserCreate, UserLogin
 from app.core.security import verify_password, create_access_token
 from app.crud.user import get_user_by_username, create_user
 from app.db import engine
-from app.tasks.email import send_welcome_email
+# from app.tasks.email import send_welcome_email
+from app.tasks.email_tasks import send_welcome_email
+
 
 from app.models.user import User
 from typing import List
@@ -21,7 +23,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="Username already registered")
     new_user = create_user(db, user)
-    send_welcome_email.delay(user.email, user.first_name)
+    # send_welcome_email.delay(user.email, user.username)
+    send_welcome_email.apply_async(args=[user.email, user.username], queue="emails")
+
     return new_user
 
 @router.post("/login")

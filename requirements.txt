@@ -10,3 +10,4 @@ celery
 pydantic[email]
 psycopg2-binary
 redis>=4.0.0
+fastapi-mail
