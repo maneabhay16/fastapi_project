@@ -1,6 +1,6 @@
+import os
 from fastapi_mail import FastMail, MessageSchema, ConnectionConfig
 from pydantic import EmailStr
-import os
 
 conf = ConnectionConfig(
     MAIL_USERNAME=os.getenv("MAIL_USERNAME", "test@example.com"),
@@ -16,14 +16,15 @@ conf = ConnectionConfig(
 
 def send_real_email(email: EmailStr, name: str):
     message = MessageSchema(
-        subject="Welcome!",
+        subject="Test Email",
         recipients=[email],
-        body=f"Hello {name}, welcome to our platform!",
+        body=f"Hello {name}, this is a test email directly without Celery.",
         subtype="plain"
     )
     fm = FastMail(conf)
-    print(f"📧 Sending welcome email to {email}...")
-    # FIX: await the coroutine
-    import asyncio
-    asyncio.run(fm.send_message(message))
-    print("✅ Email sent!")
+    fm.send_message(message)
+
+# Test function
+if __name__ == "__main__":
+    send_real_email("test@example.com", "Chaitali")
+    print("✅ Test email sent directly!")
